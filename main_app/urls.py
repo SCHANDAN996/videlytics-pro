@@ -1,7 +1,14 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from .views import home_view, register_view, login_view, logout_view
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('main_app.urls')), # Hamari main_app ke URLs ko yahan jodein
+    # Purana home page ka URL
+    path('', home_view, name='home'),
+    
+    # Naye URLs registration, login, aur logout ke liye
+    path('register/', register_view, name='register'),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
 ]
+
+
