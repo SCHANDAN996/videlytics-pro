@@ -1,174 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Videlytics.pro - YouTube Growth Suite</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #4f46e5;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body class="bg-slate-50 text-slate-800">
+{% extends 'base.html' %}
 
-    <!-- Header Section -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#" class="text-2xl font-bold text-indigo-600">Videlytics.pro</a>
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="#features" class="text-slate-600 hover:text-indigo-600">Features</a>
-                <a href="#pricing" class="text-slate-600 hover:text-indigo-600">Pricing</a>
-                <a href="#" class="text-slate-600 hover:text-indigo-600">Contact</a>
-            </div>
-            <div class="flex items-center space-x-4">
-                <a href="#" class="hidden md:block text-slate-600 font-medium hover:text-indigo-600">Login</a>
-                <a href="#" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">Sign Up</a>
-            </div>
-        </nav>
-    </header>
+{% block title %}Dashboard - Videlytics.pro{% endblock %}
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-6 py-16">
+{% block content %}
+<!-- Yahan aapka purana index.html ka content hai, ab yeh base.html se jud gaya hai -->
+<div class="bg-gray-100 dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl mb-8 border border-gray-200 dark:border-gray-700">
+    <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4">YouTube Channel Analyzer</h2>
+    <p class="text-gray-600 dark:text-gray-400 mb-6">Enter a YouTube channel URL to get detailed statistics and insights.</p>
+    <div class="flex flex-col sm:flex-row gap-4">
+        <input type="text" id="channelUrl" class="flex-grow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., https://www.youtube.com/@MrBeast">
+        <button id="analyzeBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 flex items-center justify-center">
+            <i class="fas fa-search mr-2"></i> Analyze
+        </button>
+    </div>
+</div>
+
+<div id="results" class="bg-gray-100 dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 hidden">
+    <div class="flex items-center mb-6">
+        <img id="channelThumbnail" src="" alt="Channel Thumbnail" class="w-20 h-20 sm:w-24 sm:h-24 rounded-full mr-6 border-4 border-purple-500">
+        <div>
+            <h3 id="channelName" class="text-2xl sm:text-3xl font-extrabold text-gray-800 dark:text-white"></h3>
+            <p id="channelHandle" class="text-gray-500 dark:text-gray-400"></p>
+        </div>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 text-center">
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Subscribers</p>
+            <p id="subscribers" class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white"></p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Total Views</p>
+            <p id="totalViews" class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white"></p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Total Videos</p>
+            <p id="totalVideos" class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white"></p>
+        </div>
+        <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Joined</p>
+            <p id="publishedAt" class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Note: Abhi ke liye yeh JavaScript sirf UI dikhane ke liye hai.
+    // Asli data hum agle step me Django se laayenge.
+    document.getElementById('analyzeBtn').addEventListener('click', function() {
+        const resultsDiv = document.getElementById('results');
         
-        <!-- Hero Section -->
-        <section class="text-center">
-            <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight">
-                Unlock Your YouTube <span class="text-indigo-600">Growth Potential</span>
-            </h1>
-            <p class="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
-                Analyze any YouTube channel, track competitors, and find winning keywords with our powerful suite of tools. Make data-driven decisions to grow faster.
-            </p>
-        </section>
+        // Dummy Data for demonstration
+        document.getElementById('channelThumbnail').src = 'https://yt3.googleusercontent.com/ytc/AIdro_k-3235b22ETwQOQn_v_m5d6z4sUsm8-3-G22X_vQ=s176-c-k-c0x00ffffff-no-rj';
+        document.getElementById('channelName').textContent = 'MrBeast';
+        document.getElementById('channelHandle').textContent = '@MrBeast';
+        document.getElementById('subscribers').textContent = '250M';
+        document.getElementById('totalViews').textContent = '45B';
+        document.getElementById('totalVideos').textContent = '790';
+        document.getElementById('publishedAt').textContent = 'Feb 20, 2012';
 
-        <!-- Channel Analyzer Tool -->
-        <section id="analyzer" class="mt-16 bg-white p-8 rounded-xl shadow-lg max-w-3xl mx-auto">
-            <h2 class="text-2xl font-bold text-center text-slate-800">Start by Analyzing a Channel</h2>
-            <p class="text-center text-slate-500 mt-2">Enter any YouTube channel URL to get instant insights.</p>
-            
-            <div class="mt-8">
-                <form id="channel-form">
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <input type="url" id="channel-url" placeholder="https://www.youtube.com/@MrBeast" required class="flex-grow w-full px-4 py-3 bg-slate-100 rounded-md border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <button type="submit" class="bg-indigo-600 text-white font-semibold px-8 py-3 rounded-md hover:bg-indigo-700 transition duration-300 w-full sm:w-auto">
-                            Analyze
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </section>
+        resultsDiv.classList.remove('hidden');
+    });
+</script>
+{% endblock %}
 
-        <!-- Results Section -->
-        <section id="results-section" class="mt-12 max-w-4xl mx-auto hidden">
-            <div id="loader" class="mx-auto loader hidden"></div>
-            
-            <div id="results-content" class="hidden">
-                <div class="text-center mb-8">
-                    <img id="channel-thumbnail" src="https://placehold.co/100x100/E2E8F0/4A5568?text=Logo" alt="Channel Thumbnail" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white shadow-md">
-                    <h3 id="channel-title" class="text-3xl font-bold text-slate-900">Channel Name</h3>
-                    <p id="channel-handle" class="text-slate-500">@handle</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Subscribers Card -->
-                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
-                        <p class="text-sm font-medium text-slate-500">SUBSCRIBERS</p>
-                        <p id="subscribers-count" class="text-4xl font-bold text-indigo-600 mt-2">0</p>
-                    </div>
-                    <!-- Total Views Card -->
-                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
-                        <p class="text-sm font-medium text-slate-500">TOTAL VIEWS</p>
-                        <p id="views-count" class="text-4xl font-bold text-indigo-600 mt-2">0</p>
-                    </div>
-                    <!-- Total Videos Card -->
-                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
-                        <p class="text-sm font-medium text-slate-500">TOTAL VIDEOS</p>
-                        <p id="videos-count" class="text-4xl font-bold text-indigo-600 mt-2">0</p>
-                    </div>
-                    <!-- Joined Date Card (Placeholder) -->
-                     <div class="bg-white p-6 rounded-lg shadow-md text-center">
-                        <p class="text-sm font-medium text-slate-500">JOINED</p>
-                        <p id="joined-date" class="text-4xl font-bold text-indigo-600 mt-2">N/A</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-    </main>
-    
-    <script>
-        const channelForm = document.getElementById('channel-form');
-        const resultsSection = document.getElementById('results-section');
-        const loader = document.getElementById('loader');
-        const resultsContent = document.getElementById('results-content');
-        
-        channelForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const channelUrl = document.getElementById('channel-url').value;
-            
-            if (!channelUrl) return;
 
-            resultsSection.classList.remove('hidden');
-            resultsContent.classList.add('hidden');
-            loader.classList.remove('hidden');
-
-            setTimeout(() => {
-                const mockData = {
-                    thumbnailUrl: 'https://yt3.ggpht.com/ytc/AIdro_k-3Gf_u8Vf3AgJ1823sVb2JM2233a-Ie67dWf7wA=s88-c-k-c0x00ffffff-no-rj',
-                    title: 'MrBeast',
-                    handle: '@MrBeast',
-                    subscribers: 292000000,
-                    views: 54321987654,
-                    videos: 790,
-                    joined: '2012'
-                };
-                
-                displayResults(mockData);
-                
-                loader.classList.add('hidden');
-                resultsContent.classList.remove('hidden');
-
-            }, 2000); 
-        });
-
-        function displayResults(data) {
-            document.getElementById('channel-thumbnail').src = data.thumbnailUrl;
-            document.getElementById('channel-title').textContent = data.title;
-            document.getElementById('channel-handle').textContent = data.handle;
-            document.getElementById('subscribers-count').textContent = formatNumber(data.subscribers);
-            document.getElementById('views-count').textContent = formatNumber(data.views);
-            document.getElementById('videos-count').textContent = formatNumber(data.videos);
-            document.getElementById('joined-date').textContent = data.joined;
-        }
-
-        function formatNumber(num) {
-            if (num >= 1000000000) {
-                return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
-            }
-            if (num >= 1000000) {
-                return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-            }
-            if (num >= 1000) {
-                return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-            }
-            return num;
-        }
-
-    </script>
-
-</body>
-</html>
