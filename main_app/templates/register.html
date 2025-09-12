@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - Videlytics.pro{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Create a New Account</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="space-y-4">
+            {{ form.as_p }}
+        </div>
+        
+        <div class="mt-6">
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Sign Up</button>
+        </div>
+    </form>
+    <p class="mt-4 text-center text-sm text-gray-600">
+        Already have an account? <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500">Log In</a>
+    </p>
+</div>
+{% endblock %}
+
+
