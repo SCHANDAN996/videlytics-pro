@@ -1,3 +1,0 @@
-​gunicorn
-google-api-python-client
-Django
