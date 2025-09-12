@@ -3,126 +3,109 @@
 {% block title %}Dashboard - Videlytics.pro{% endblock %}
 
 {% block content %}
-<div class="bg-gray-100 dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl mb-8 border border-gray-200 dark:border-gray-700">
-    <h2 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4">YouTube Channel Analyzer</h2>
-    <p class="text-gray-600 dark:text-gray-400 mb-6">Enter a YouTube channel URL to get detailed statistics and insights.</p>
-    <div class="flex flex-col sm:flex-row gap-4">
-        <input type="text" id="channelUrl" class="flex-grow bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-2 border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="e.g., https://www.youtube.com/@MrBeast">
-        <button id="analyzeBtn" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 flex items-center justify-center w-full sm:w-auto">
-            <span id="analyze-btn-text"><i class="fas fa-search mr-2"></i> Analyze</span>
-            <span id="analyze-spinner" class="hidden"><i class="fas fa-spinner fa-spin"></i></span>
-        </button>
+<div class="max-w-3xl mx-auto">
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold tracking-tight sm:text-5xl">Channel Analyzer</h1>
+        <p class="mt-3 text-lg max-w-2xl mx-auto">
+            Enter a YouTube channel URL to get its latest statistics instantly.
+        </p>
+    </div>
+
+    <div class="card border rounded-lg shadow-lg p-6 md:p-8">
+        <div class="flex flex-col sm:flex-row gap-4">
+            <input type="text" id="channel-url" class="flex-grow p-3 border rounded-md focus:ring-2 focus:ring-indigo-500" placeholder="Enter YouTube Channel URL...">
+            <button id="analyze-btn" class="btn-primary text-white font-semibold py-3 px-6 rounded-md transition-transform transform hover:scale-105">
+                Analyze
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results" class="mt-8 hidden">
+        <div class="card border rounded-lg shadow-lg p-6 md:p-8">
+            <div id="loading" class="text-center py-4 hidden">
+                <p class="text-lg font-semibold animate-pulse">Analyzing, please wait...</p>
+            </div>
+            <div id="error" class="text-center py-4 text-red-500 font-semibold hidden"></div>
+            <div id="channel-details" class="hidden">
+                <div class="flex items-center space-x-6 mb-6">
+                    <img id="channel-thumbnail" src="" alt="Channel Thumbnail" class="w-24 h-24 rounded-full border-4 border-gray-200">
+                    <div>
+                        <h2 id="channel-title" class="text-3xl font-bold"></h2>
+                        <p class="text-gray-500 mt-1">Channel Statistics</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                    <div class="card p-6 rounded-lg border">
+                        <p class="text-sm font-medium text-gray-500">Subscribers</p>
+                        <p id="subscriber-count" class="text-3xl font-bold mt-1"></p>
+                    </div>
+                    <div class="card p-6 rounded-lg border">
+                        <p class="text-sm font-medium text-gray-500">Total Views</p>
+                        <p id="view-count" class="text-3xl font-bold mt-1"></p>
+                    </div>
+                    <div class="card p-6 rounded-lg border">
+                        <p class="text-sm font-medium text-gray-500">Total Videos</p>
+                        <p id="video-count" class="text-3xl font-bold mt-1"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<div id="results" class="bg-gray-100 dark:bg-gray-800 p-6 sm:p-8 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 hidden">
-    <!-- Results yahan dikhenge -->
-</div>
-
-<!-- Error message ke liye container -->
-<div id="error-container" class="mt-4"></div>
-
-
 <script>
-    // Ab yeh script hamare Django backend se baat karegi
-    document.getElementById('analyzeBtn').addEventListener('click', async function() {
-        const channelUrl = document.getElementById('channelUrl').value;
+    document.getElementById('analyze-btn').addEventListener('click', async () => {
+        const channelUrl = document.getElementById('channel-url').value;
         const resultsDiv = document.getElementById('results');
-        const errorContainer = document.getElementById('error-container');
-        const analyzeBtnText = document.getElementById('analyze-btn-text');
-        const analyzeSpinner = document.getElementById('analyze-spinner');
-
-        // Purane results aur error saaf karein
-        resultsDiv.classList.add('hidden');
-        resultsDiv.innerHTML = '';
-        errorContainer.innerHTML = '';
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error');
+        const detailsDiv = document.getElementById('channel-details');
+        
+        // Reset and show loading state
+        resultsDiv.classList.remove('hidden');
+        loadingDiv.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+        detailsDiv.classList.add('hidden');
 
         if (!channelUrl) {
-            showError('Please enter a YouTube channel URL.');
+            loadingDiv.classList.add('hidden');
+            errorDiv.textContent = 'Please enter a valid YouTube channel URL.';
+            errorDiv.classList.remove('hidden');
             return;
         }
-
-        // Button me spinner dikhayein
-        analyzeBtnText.classList.add('hidden');
-        analyzeSpinner.classList.remove('hidden');
-        this.disabled = true;
 
         try {
             const response = await fetch("{% url 'analyze_channel' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
                 },
                 body: JSON.stringify({ channel_url: channelUrl })
             });
 
             const data = await response.json();
+            loadingDiv.classList.add('hidden');
 
-            if (!response.ok) {
-                throw new Error(data.error || 'Something went wrong.');
+            if (data.error) {
+                errorDiv.textContent = data.error;
+                errorDiv.classList.remove('hidden');
+            } else {
+                // Update UI with real data
+                document.getElementById('channel-thumbnail').src = data.thumbnail_url;
+                document.getElementById('channel-title').textContent = data.title;
+                document.getElementById('subscriber-count').textContent = data.subscriber_count;
+                document.getElementById('view-count').textContent = data.view_count;
+                document.getElementById('video-count').textContent = data.video_count;
+                detailsDiv.classList.remove('hidden');
             }
-            
-            displayResults(data);
-
-        } catch (error) {
-            showError(error.message);
-        } finally {
-            // Spinner hatayein aur button ko wapas enable karein
-            analyzeBtnText.classList.remove('hidden');
-            analyzeSpinner.classList.add('hidden');
-            this.disabled = false;
+        } catch (err) {
+            loadingDiv.classList.add('hidden');
+            errorDiv.textContent = 'An unexpected error occurred. Please try again.';
+            errorDiv.classList.remove('hidden');
         }
     });
-
-    function displayResults(data) {
-        const resultsDiv = document.getElementById('results');
-
-        // Numbers ko format karne ke liye helper function
-        const formatNumber = (num) => {
-            if (num >= 1000000000) return (num / 1000000000).toFixed(1) + 'B';
-            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-            return num;
-        }
-
-        resultsDiv.innerHTML = `
-            <div class="flex flex-col sm:flex-row items-center mb-6">
-                <img src="${data.thumbnail}" alt="Channel Thumbnail" class="w-24 h-24 rounded-full mr-0 sm:mr-6 mb-4 sm:mb-0 border-4 border-purple-500">
-                <div class="text-center sm:text-left">
-                    <h3 class="text-3xl font-extrabold text-gray-800 dark:text-white">${data.channelName}</h3>
-                    <p class="text-gray-500 dark:text-gray-400">${data.channelHandle}</p>
-                </div>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 text-center">
-                <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Subscribers</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">${formatNumber(data.subscribers)}</p>
-                </div>
-                <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Views</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">${formatNumber(data.totalViews)}</p>
-                </div>
-                <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Videos</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">${formatNumber(data.totalVideos)}</p>
-                </div>
-                <div class="bg-gray-200 dark:bg-gray-700 p-4 rounded-lg">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Joined</p>
-                    <p class="text-2xl font-bold text-gray-900 dark:text-white">${data.publishedAt}</p>
-                </div>
-            </div>
-        `;
-        resultsDiv.classList.remove('hidden');
-    }
-
-    function showError(message) {
-        const errorContainer = document.getElementById('error-container');
-        errorContainer.innerHTML = `<div class="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg relative" role="alert">
-            <strong class="font-bold">Error:</strong>
-            <span class="block sm:inline">${message}</span>
-        </div>`;
-    }
-
 </script>
 {% endblock %}
 
