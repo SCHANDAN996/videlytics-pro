@@ -4,7 +4,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 import os
 import json
-from .youtube_api import get_channel_details # Ise import karein
+from django.http import JsonResponse # यह ज़रूरी import है
+from .youtube_api import get_channel_details
 
 # Home Page View - Login zaroori hai
 @login_required
@@ -35,12 +36,9 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'login.html', {'form': form})
 
-# Logout View (NAYA FUNCTION)
+# Logout View
 def logout_view(request):
-    if request.method == 'POST':
-        logout(request)
-        return redirect('login')
-    # Agar GET request hai to bhi logout kar dein (optional, for convenience)
+    # Dono GET aur POST request par logout kar dega
     logout(request)
     return redirect('login')
 
@@ -64,3 +62,4 @@ def analyze_channel_view(request):
         return JsonResponse(channel_data)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
