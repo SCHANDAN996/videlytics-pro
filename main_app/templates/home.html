@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Videlytics{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h1>Welcome to Videlytics.pro</h1>
+    <p class="lead">Your Ultimate YouTube Growth Suite.</p>
+    {% if not user.is_authenticated %}
+        <a href="{% url 'signup' %}" class="btn btn-primary btn-lg mt-3">Get Started for Free</a>
+    {% else %}
+        <p class="lead mt-4">You are logged in. Ready to analyze?</p>
+        {% endif %}
+</div>
+{% endblock %}
