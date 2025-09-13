@@ -6,7 +6,3 @@ razz-berry
 python-dotenv
 dj-database-url
 whitenoise
-
-
-
-
