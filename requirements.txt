@@ -8,5 +8,5 @@ dj-database-url
 whitenoise
 django-crispy-forms
 crispy-tailwind
-
-
+django-allauth
+requests-oauthlib
