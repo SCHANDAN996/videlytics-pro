@@ -2,9 +2,19 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.home_view, name='home'),
-    path('wallet/', views.wallet_view, name='wallet'),
-    path('api/create_order/', views.create_order_view, name='create_order'),
-    path('payment/handler/', views.payment_handler_view, name='payment_handler'),
-    path('api/analyze_channel/', views.analyze_channel_view, name='analyze_channel'),
+    # Public Pages
+    path('', views.landing_page_view, name='landing_page'),
+
+    # Dashboard & Core App
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('pricing/', views.pricing_view, name='pricing'),
+    path('profile/', views.profile_view, name='profile'),
+    
+    # Subscription & Payment
+    path('subscription/create/<int:plan_id>/', views.create_subscription_view, name='create_subscription'),
+    path('subscription/success/', views.subscription_success_view, name='subscription_success'),
+
+    # Tools
+    path('tools/youtube-analyzer/', views.analyze_channel_view, name='analyze_channel'),
+    # Add other tools here in the future
 ]
