@@ -3,5 +3,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('main_app.urls')), # Request ko main_app mein bhejein
+    path('accounts/', include('allauth.urls')), # Allauth ke URLs
+    path('', include('main_app.urls')),
 ]
