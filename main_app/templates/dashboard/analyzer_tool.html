@@ -1,0 +1,41 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block page_title %}YouTube Channel Analyzer{% endblock %}
+
+{% block dashboard_content %}
+<div class="bg-white p-8 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-2">Channel Analyzer</h2>
+    <p class="text-gray-600 mb-6">Enter a YouTube channel URL to get detailed insights and export the data to Excel.</p>
+    
+    {% if error %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">{{ error }}</span>
+        </div>
+    {% endif %}
+
+    <form action="{% url 'analyze_channel' %}" method="POST">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="channel_url" class="block text-gray-700 text-sm font-bold mb-2">
+                YouTube Channel URL, ID, or @Username:
+            </label>
+            <input type="text" name="channel_url" id="channel_url" required
+                   class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                   placeholder="e.g., https://www.youtube.com/@MrBeast">
+        </div>
+        <div class="mb-4">
+            <label for="max_videos" class="block text-gray-700 text-sm font-bold mb-2">
+                Number of Videos to Analyze (Max 500):
+            </label>
+            <input type="number" name="max_videos" id="max_videos" value="50" min="10" max="500"
+                   class="shadow appearance-none border rounded w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline">
+            Analyze Channel
+        </button>
+    </form>
+</div>
+
+<!-- You can add a section here to display results if you modify the view to return them via AJAX -->
+{% endblock %}
+
