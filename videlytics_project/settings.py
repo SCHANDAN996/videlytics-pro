@@ -24,7 +24,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    
+    # My Apps
     'main_app',
+    
+    # Third-party Apps
     'crispy_forms',
     'crispy_tailwind',
     'allauth',
@@ -50,7 +54,7 @@ ROOT_URLCONF = 'videlytics_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], # Add this line
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,11 +69,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'videlytics_project.wsgi.application'
 
+# Database
 if 'DATABASE_URL' in os.environ:
     DATABASES = { 'default': dj_database_url.config(conn_max_age=600, conn_health_checks=True) }
 else:
     DATABASES = { 'default': { 'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3' } }
 
+# Password validators
 AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
     { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
@@ -77,11 +83,13 @@ AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
 
+# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STORAGES = {
@@ -90,22 +98,34 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# --- ALLAUTH SETTINGS ---
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
 SITE_ID = 1
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
-ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_VERIFICATION = "optional" # or "mandatory"
+ACCOUNT_AUTHENTICATION_METHOD = "username_email"
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_LOGOUT_ON_GET = True # Allows logout without confirmation page
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'}
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'APP': {
+            'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
+            'secret': os.environ.get('GOOGLE_SECRET_KEY'),
+            'key': ''
+        }
     }
 }
 
+# --- CRISPY FORMS SETTINGS ---
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
