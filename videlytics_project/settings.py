@@ -57,3 +57,26 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- YEH DO LINEIN BAHUT ZAROORI HAIN ---
 LOGIN_URL = 'login' 
 LOGIN_REDIRECT_URL = 'home'
+
+    # ... (upar ka code waisa hi rahega) ...
+     
+     INSTALLED_APPS = [
+         'django.contrib.admin',
+         'django.contrib.auth',
+         'django.contrib.contenttypes',
+         'django.contrib.sessions',
+         'django.contrib.messages',
+         'whitenoise.runserver_nostatic',
+         'django.contrib.staticfiles',
+         'main_app',
+         'crispy_forms',           # Naya app jodein
+         'crispy_tailwind',      # Naya app jodein
+     ]
+     
+     # file ke sabse neeche yeh do linein jodein
+     CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+     CRISPY_TEMPLATE_PACK = "tailwind"
+     
+     # ... (baki ka code waisa hi rahega) ...
+     
+
