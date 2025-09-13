@@ -5,13 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Videlytics.pro{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Aap yahan custom CSS likh sakte hain */
-        body { font-family: 'Inter', sans-serif; }
-    </style>
+    <style> body { font-family: 'Inter', sans-serif; } </style>
 </head>
 <body class="bg-gray-100">
-
     <nav class="bg-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -20,35 +16,25 @@
                 </div>
                 <div class="flex items-center">
                     {% if user.is_authenticated %}
-                        <span class="text-gray-600 mr-4">
-                            Welcome, {{ user.username }}
-                        </span>
-                        
-                        <!-- Abhi ke liye Wallet ka link jodein -->
-                        <a href="#" class="bg-green-100 text-green-800 text-sm font-medium mr-4 px-3 py-1 rounded-full hover:bg-green-200">
+                        <span class="text-gray-600 mr-4">Welcome, {{ user.username }}</span>
+                        <a href="{% url 'wallet' %}" class="bg-green-100 text-green-800 text-sm font-medium mr-4 px-3 py-1 rounded-full hover:bg-green-200">
                             My Wallet
                         </a>
-
-                        <form action="{% url 'logout' %}" method="post" class="inline">
-                            {% csrf_token %}
-                            <button type="submit" class="text-gray-600 hover:text-gray-800">Logout</button>
-                        </form>
+                        <a href="{% url 'account_logout' %}" class="text-gray-600 hover:text-gray-800">Logout</a>
                     {% else %}
-                        <a href="{% url 'login' %}" class="text-gray-600 hover:text-gray-800 mr-4">Login</a>
-                        <a href="{% url 'register' %}" class="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Register</a>
+                        <a href="{% url 'account_login' %}" class="text-gray-600 hover:text-gray-800 mr-4">Login</a>
+                        <a href="{% url 'account_signup' %}" class="bg-blue-600 text-white px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">Register</a>
                     {% endif %}
                 </div>
             </div>
         </div>
     </nav>
-
     <main class="py-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {% block content %}
             {% endblock %}
         </div>
     </main>
-
     {% block scripts %}{% endblock %}
 </body>
 </html>
