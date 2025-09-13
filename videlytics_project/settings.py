@@ -10,12 +10,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [
-    'videlytics-pro.onrender.com',
-    'www.videlytics.pro',
-    'videlytics.pro',
-    '127.0.0.1',
-]
+ALLOWED_HOSTS = []
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+ALLOWED_HOSTS.append('www.videlytics.pro')
+ALLOWED_HOSTS.append('videlytics.pro')
+ALLOWED_HOSTS.append('127.0.0.1')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -23,12 +24,14 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic', # Whitenoise ko jodein
     'django.contrib.staticfiles',
     'main_app',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Whitenoise ko yahan bhi jodein
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,7 +78,15 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+# Production ke liye zaroori settings
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGIN_URL = 'login'
+LOGIN_URL = 'login' 
 LOGIN_REDIRECT_URL = 'home'
