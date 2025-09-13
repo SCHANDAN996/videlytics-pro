@@ -11,3 +11,5 @@ crispy-tailwind
 django-allauth
 requests-oauthlib
 PyJWT
+pandas
+openpyxl
