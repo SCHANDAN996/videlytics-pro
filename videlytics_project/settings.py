@@ -1,10 +1,20 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+import dj_database_url
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-DEBUG = True 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'default-secret-key-for-debugging')
-ALLOWED_HOSTS = ['*']
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ['true', '1', 't']
+
+ALLOWED_HOSTS = []
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+ALLOWED_HOSTS.extend(['www.videlytics.pro', 'videlytics.pro', '127.0.0.1'])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -12,12 +22,16 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     'main_app',
+    'crispy_forms',
+    'crispy_tailwind',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -31,7 +45,7 @@ ROOT_URLCONF = 'videlytics_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')], # Base templates ke liye
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -44,39 +58,37 @@ TEMPLATES = [
     },
 ]
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+WSGI_APPLICATION = 'videlytics_project.wsgi.application'
+
+if 'DATABASE_URL' in os.environ:
+    DATABASES = { 'default': dj_database_url.config(conn_max_age=600, conn_health_checks=True) }
+else:
+    DATABASES = { 'default': { 'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3' } }
+
+AUTH_PASSWORD_VALIDATORS = [
+    { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
+]
+
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# --- YEH DO LINEIN BAHUT ZAROORI HAIN ---
 LOGIN_URL = 'login' 
 LOGIN_REDIRECT_URL = 'home'
 
-    # ... (upar ka code waisa hi rahega) ...
-     
-     INSTALLED_APPS = [
-         'django.contrib.admin',
-         'django.contrib.auth',
-         'django.contrib.contenttypes',
-         'django.contrib.sessions',
-         'django.contrib.messages',
-         'whitenoise.runserver_nostatic',
-         'django.contrib.staticfiles',
-         'main_app',
-         'crispy_forms',           # Naya app jodein
-         'crispy_tailwind',      # Naya app jodein
-     ]
-     
-     # file ke sabse neeche yeh do linein jodein
-     CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
-     CRISPY_TEMPLATE_PACK = "tailwind"
-     
-     # ... (baki ka code waisa hi rahega) ...
-     
-
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+CRISPY_TEMPLATE_PACK = "tailwind"
