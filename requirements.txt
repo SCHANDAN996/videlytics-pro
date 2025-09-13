@@ -2,7 +2,8 @@ Django
 gunicorn
 google-api-python-client
 psycopg2-binary
-razz-berry
+razorpay
 python-dotenv
 dj-database-url
 whitenoise
+
