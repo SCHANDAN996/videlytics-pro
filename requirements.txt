@@ -6,4 +6,7 @@ razorpay
 python-dotenv
 dj-database-url
 whitenoise
+django-crispy-forms
+crispy-tailwind
+
 
