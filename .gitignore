@@ -1,9 +1,1 @@
-
-​Environment variables
-​.env
-​Python
-​pycache/
-venv/
-*.pyc
-​Django
-​db.sqlite3
+Environment variables.env*.envPythonpycache/venv/*.pyc*.pyo*.pydDjangodb.sqlite3staticfiles/media/IDE files.idea/.vscode/
