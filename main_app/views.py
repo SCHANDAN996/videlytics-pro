@@ -1,60 +1,84 @@
-from googleapiclient.discovery import build
-import re
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
+import os
+import json
+from django.http import JsonResponse
+# from .youtube_api import get_channel_details # Abhi ke liye comment rakhein
+# from .models import Wallet # Abhi ke liye comment rakhein
+from decimal import Decimal
 
-def parse_channel_input(input_string):
-    input_string = input_string.strip()
-    if input_string.startswith('@'):
-        return input_string[1:]
-    
-    patterns = [
-        r'(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:channel\/|c\/|@|user\/)?([a-zA-Z0-9_.-]+)'
-    ]
-    for pattern in patterns:
-        match = re.search(pattern, input_string)
-        if match:
-            return match.group(1)
-            
-    return input_string
+# Home Page View - Login zaroori hai
+@login_required
+def home_view(request):
+    # wallet = Wallet.objects.get(user=request.user)
+    # context = {'wallet_balance': wallet.balance}
+    context = {'wallet_balance': '10.00'} # Abhi ke liye dummy data
+    return render(request, 'index.html', context)
 
-def get_channel_details(api_key, channel_input):
-    try:
-        youtube = build('youtube', 'v3', developerKey=api_key)
+# Register View
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
+
+# Login View
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = AuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
+
+# Logout View
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+
+# API View - Channel data ke liye
+@login_required
+def analyze_channel_view(request):
+    # wallet = Wallet.objects.get(user=request.user)
+    analysis_cost = Decimal('0.25')
+
+    # if wallet.balance < analysis_cost:
+    #     return JsonResponse({'error': 'Insufficient balance. Please add funds to your wallet.'}, status=402)
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        channel_url = data.get('channel_url')
+        api_key = os.environ.get('YOUTUBE_API_KEY')
+
+        if not channel_url or not api_key:
+            return JsonResponse({'error': 'Channel URL or API Key is missing'}, status=400)
         
-        clean_input = parse_channel_input(channel_input)
-        if not clean_input:
-            return {'error': 'Invalid YouTube Channel URL or Handle.'}
-
-        search_param = {}
-        if clean_input.startswith('UC') and len(clean_input) == 24:
-            search_param['id'] = clean_input
-        else:
-            request = youtube.search().list(
-                part="snippet", q=clean_input, type="channel", maxResults=1
-            )
-            response = request.execute()
-            if not response.get('items'):
-                return {'error': f"Channel with handle '{clean_input}' not found."}
-            search_param['id'] = response['items'][0]['id']['channelId']
-
-        request = youtube.channels().list(
-            part="snippet,statistics", **search_param
-        )
-        response = request.execute()
-
-        if not response.get('items'):
-            return {'error': 'Channel details not found. Please check the input.'}
-
-        channel = response['items'][0]
-        stats = channel.get('statistics', {})
-        
-        return {
-            'title': channel['snippet']['title'],
-            'thumbnail': channel['snippet']['thumbnails']['default']['url'],
-            'subscribers': stats.get('subscriberCount', '0'),
-            'views': stats.get('viewCount', '0'),
-            'videos': stats.get('videoCount', '0'),
-            'channelId': channel['id']
+        # Abhi ke liye dummy data
+        channel_data = {
+            'title': 'Dummy Channel', 'thumbnail': 'https://via.placeholder.com/80',
+            'subscribers': '1000000', 'views': '50000000', 'videos': '1500',
+            'channelId': 'UC-dummy-id'
         }
-    except Exception as e:
-        print(f"YouTube API Error: {e}")
-        return {'error': 'An error occurred with the YouTube API. Key might be invalid or quota exceeded.'}
+        # channel_data = get_channel_details(api_key, channel_url)
+
+        # if channel_data.get('error'):
+        #     return JsonResponse(channel_data, status=400)
+
+        # wallet.balance -= analysis_cost
+        # wallet.save()
+
+        # channel_data['new_balance'] = wallet.balance
+        return JsonResponse(channel_data)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
