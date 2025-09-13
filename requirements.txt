@@ -1,4 +1,3 @@
-
 ​Django
 gunicorn
 google-api-python-client
@@ -7,3 +6,4 @@ razz-berry
 python-dotenv
 dj-database-url
 whitenoise
+
