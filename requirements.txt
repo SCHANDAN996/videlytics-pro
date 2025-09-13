@@ -1,8 +1,9 @@
-Django
+
+​Django
 gunicorn
 google-api-python-client
 psycopg2-binary
+razz-berry
 python-dotenv
 dj-database-url
-
-
+whitenoise
