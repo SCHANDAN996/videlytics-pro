@@ -37,3 +37,26 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.decorators import login_required
+from .forms import CustomUserCreationForm # Puraane form ki jagah naya form import karein
+
+# ... (baki ka code waisa hi rahega) ...
+
+# Register View - YAHAN BADLAV HUA HAI
+def register_view(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST) # Naye form ka istemal karein
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = CustomUserCreationForm() # Naye form ka istemal karein
+    return render(request, 'registration/register.html', {'form': form})
+
+# ... (baki ka code waisa hi rahega) ...
+
