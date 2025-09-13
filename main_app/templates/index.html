@@ -3,20 +3,17 @@
 {% block content %}
 <div class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
     <h1 class="text-2xl font-bold text-gray-800 mb-6">YouTube Channel Analyzer</h1>
-    
     <div class="space-y-4">
         <div>
             <label for="channel-url" class="block text-sm font-medium text-gray-700">Enter YouTube Channel URL or Handle</label>
-            <input type="text" id="channel-url" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., @tseries or https://www.youtube.com/tseries">
+            <input type="text" id="channel-url" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., @tseries or https://www.youtube.com/@tseries">
         </div>
         <button id="analyze-btn" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center">
-            <span id="btn-text">Analyze Channel</span>
+            <span id="btn-text">Analyze Channel (Cost: ₹0.25)</span>
             <div id="loading-spinner" class="hidden animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
         </button>
     </div>
-
     <div id="error-message" class="hidden mt-4 p-3 bg-red-100 text-red-700 rounded-md"></div>
-    
     <div id="results-container" class="hidden mt-6 border-t border-gray-200 pt-6">
         <div class="flex items-center space-x-4">
             <img id="channel-thumbnail" src="" alt="Channel Thumbnail" class="w-20 h-20 rounded-full">
@@ -26,22 +23,14 @@
             </div>
         </div>
         <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm font-medium text-gray-500">Subscribers</p>
-                <p id="subscriber-count" class="mt-1 text-3xl font-semibold text-gray-900"></p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm font-medium text-gray-500">Total Views</p>
-                <p id="view-count" class="mt-1 text-3xl font-semibold text-gray-900"></p>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm font-medium text-gray-500">Total Videos</p>
-                <p id="video-count" class="mt-1 text-3xl font-semibold text-gray-900"></p>
-            </div>
+            <div class="bg-gray-50 p-4 rounded-lg"><p class="text-sm font-medium text-gray-500">Subscribers</p><p id="subscriber-count" class="mt-1 text-3xl font-semibold text-gray-900"></p></div>
+            <div class="bg-gray-50 p-4 rounded-lg"><p class="text-sm font-medium text-gray-500">Total Views</p><p id="view-count" class="mt-1 text-3xl font-semibold text-gray-900"></p></div>
+            <div class="bg-gray-50 p-4 rounded-lg"><p class="text-sm font-medium text-gray-500">Total Videos</p><p id="video-count" class="mt-1 text-3xl font-semibold text-gray-900"></p></div>
         </div>
     </div>
 </div>
-
+{% endblock %}
+{% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const analyzeBtn = document.getElementById('analyze-btn');
@@ -69,40 +58,22 @@
 
         analyzeBtn.addEventListener('click', function() {
             const channelUrl = channelUrlInput.value.trim();
-            if (!channelUrl) { showError('Please enter a YouTube channel URL.'); return; }
-
+            if (!channelUrl) { showError('Please enter a YouTube channel URL or Handle.'); return; }
             showLoading(true);
             hideError();
             resultsContainer.classList.add('hidden');
 
-            fetch('/api/analyze_channel/', {
+            fetch("{% url 'analyze_channel' %}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
                 body: JSON.stringify({ channel_url: channelUrl })
             })
-            .then(response => {
-                if (!response.ok) { return response.json().then(err => { throw err; }); }
-                return response.json();
+            .then(response => response.json().then(data => ({ ok: response.ok, status: response.status, body: data })))
+            .then(({ ok, status, body }) => {
+                if (!ok) { showError(body.error || `Error: ${status}`); return; }
+                displayResults(body);
             })
-            .then(data => {
-                if (data.error) {
-                    showError(data.error);
-                } else {
-                    displayResults(data);
-                    if(data.analyses_left !== undefined) {
-                        const quotaDisplay = document.getElementById('quota-display');
-                        if(quotaDisplay) {
-                             const planName = "{{ subscription.plan.name }}";
-                             quotaDisplay.innerHTML = `${planName} Plan | ${data.analyses_left}/${data.quota_total} Left`;
-                        }
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                const errorMsg = error.error || 'An unexpected error occurred. Please try again.';
-                showError(errorMsg);
-            })
+            .catch(error => { console.error('Error:', error); showError('An unexpected error occurred.'); })
             .finally(() => { showLoading(false); });
         });
 
@@ -116,32 +87,14 @@
             resultsContainer.classList.remove('hidden');
         }
 
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.classList.remove('hidden');
-        }
-
-        function hideError() {
-            errorMessage.classList.add('hidden');
-        }
-
+        function showError(message) { errorMessage.textContent = message; errorMessage.classList.remove('hidden'); }
+        function hideError() { errorMessage.classList.add('hidden'); }
         function showLoading(isLoading) {
-            if (isLoading) {
-                btnText.classList.add('hidden');
-                loadingSpinner.classList.remove('hidden');
-                analyzeBtn.disabled = true;
-            } else {
-                btnText.classList.remove('hidden');
-                loadingSpinner.classList.add('hidden');
-                analyzeBtn.disabled = false;
-            }
+            btnText.style.display = isLoading ? 'none' : 'block';
+            loadingSpinner.style.display = isLoading ? 'block' : 'none';
+            analyzeBtn.disabled = isLoading;
         }
-
-        function formatNumber(num) {
-            const number = parseInt(num, 10);
-            if (isNaN(number)) return 'N/A';
-            return number.toLocaleString('en-IN');
-        }
+        function formatNumber(num) { return parseInt(num, 10).toLocaleString('en-IN'); }
     });
 </script>
 {% endblock %}
