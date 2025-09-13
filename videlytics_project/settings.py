@@ -2,13 +2,9 @@ from pathlib import Path
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Sabse zaroori: DEBUG ko True rakhein taaki humein error dikhe
 DEBUG = True 
-
 SECRET_KEY = os.environ.get('SECRET_KEY', 'default-secret-key-for-debugging')
-
-ALLOWED_HOSTS = ['*'] # Debugging ke liye sabko allow karein
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -35,8 +31,16 @@ ROOT_URLCONF = 'videlytics_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')], # Base templates ke liye
         'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
     },
 ]
 
@@ -49,3 +53,7 @@ DATABASES = {
 
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- YEH DO LINEIN BAHUT ZAROORI HAIN ---
+LOGIN_URL = 'login' 
+LOGIN_REDIRECT_URL = 'home'
