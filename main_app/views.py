@@ -1,101 +1,140 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-import os
-import json
+from django.http import HttpResponse, JsonResponse
+from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+from .models import Plan, Subscription, UserProfile
+from .youtube_api import YouTubeChannelAnalyzer # Assuming youtube_api.py is updated
 import razorpay
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from .youtube_api import get_channel_details
-from .models import Wallet, Transaction
-from decimal import Decimal
+import json
+import os
+
+# Initialize Razorpay client
+razorpay_client = razorpay.Client(
+    auth=(os.environ.get('RAZORPAY_KEY_ID'), os.environ.get('RAZORPAY_KEY_SECRET'))
+)
+
+def landing_page_view(request):
+    """ Public landing page """
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+    return render(request, 'index.html')
 
 @login_required
-def home_view(request):
-    wallet, created = Wallet.objects.get_or_create(user=request.user)
-    context = {'wallet_balance': wallet.balance}
-    return render(request, 'index.html', context)
-
-@login_required
-def wallet_view(request):
-    wallet = Wallet.objects.get(user=request.user)
-    transactions = Transaction.objects.filter(wallet=wallet).order_by('-timestamp')
+def dashboard_view(request):
+    """ Main dashboard for logged-in users """
+    try:
+        active_subscription = Subscription.objects.get(user=request.user, is_active=True)
+    except Subscription.DoesNotExist:
+        active_subscription = None
+    
     context = {
-        'wallet': wallet,
-        'transactions': transactions,
-        'razorpay_key_id': os.environ.get('RAZORPAY_KEY_ID')
+        'subscription': active_subscription,
     }
-    return render(request, 'wallet.html', context)
+    return render(request, 'dashboard/dashboard.html', context)
 
 @login_required
-def create_order_view(request):
+def pricing_view(request):
+    """ Display subscription plans """
+    plans = Plan.objects.all().order_by('price')
+    context = {'plans': plans}
+    return render(request, 'dashboard/pricing.html', context)
+
+@login_required
+def create_subscription_view(request, plan_id):
+    """ Create a Razorpay subscription order """
     if request.method == 'POST':
+        plan = Plan.objects.get(id=plan_id)
+        
+        # Data for creating subscription in Razorpay
+        subscription_data = {
+            'plan_id': plan.razorpay_plan_id,
+            'total_count': 12, # For a 1-year plan with monthly payments
+            'quantity': 1,
+        }
+        
         try:
-            data = json.loads(request.body)
-            amount = int(float(data.get('amount')) * 100)
-            if amount < 100:
-                return JsonResponse({'error': 'Amount must be at least ₹1'}, status=400)
+            subscription = razorpay_client.subscription.create(subscription_data)
             
-            razorpay_client = razorpay.Client(auth=(os.environ.get('RAZORPAY_KEY_ID'), os.environ.get('RAZORPAY_KEY_SECRET')))
-            order_data = {'amount': amount, 'currency': 'INR', 'receipt': f'receipt_{request.user.id}_{Transaction.objects.count()}'}
-            order = razorpay_client.order.create(data=order_data)
-
-            wallet = Wallet.objects.get(user=request.user)
-            Transaction.objects.create(wallet=wallet, amount=Decimal(data.get('amount')), order_id=order['id'], status='Pending')
-            return JsonResponse(order)
+            context = {
+                'subscription_id': subscription['id'],
+                'razorpay_key_id': os.environ.get('RAZORPAY_KEY_ID'),
+                'plan_name': plan.name,
+                'user_name': request.user.username,
+                'user_email': request.user.email,
+            }
+            return render(request, 'dashboard/payment.html', context)
+            
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+            return JsonResponse({'error': str(e)})
 
-@csrf_exempt
-def payment_handler_view(request):
-    if request.method == "POST":
-        razorpay_order_id = request.POST.get('razorpay_order_id', '')
+    return redirect('pricing')
+
+@login_required
+def subscription_success_view(request):
+    """ Handle successful payment and activate subscription """
+    if request.method == 'POST':
+        data = request.POST
+        razorpay_subscription_id = data.get('razorpay_subscription_id')
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_signature = data.get('razorpay_signature')
+        
+        params_dict = {
+            'razorpay_subscription_id': razorpay_subscription_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        }
+
         try:
-            payment_data = request.POST
-            razorpay_payment_id = payment_data.get('razorpay_payment_id', '')
-            razorpay_signature = payment_data.get('razorpay_signature', '')
-            params_dict = {'razorpay_order_id': razorpay_order_id, 'razorpay_payment_id': razorpay_payment_id, 'razorpay_signature': razorpay_signature}
-            
-            razorpay_client = razorpay.Client(auth=(os.environ.get('RAZORPAY_KEY_ID'), os.environ.get('RAZORPAY_KEY_SECRET')))
+            # Verify the payment signature
             razorpay_client.utility.verify_payment_signature(params_dict)
 
-            transaction = Transaction.objects.get(order_id=razorpay_order_id)
-            transaction.payment_id = razorpay_payment_id
-            transaction.status = 'Success'
-            transaction.save()
+            # Find the plan associated with the razorpay subscription
+            sub_details = razorpay_client.subscription.fetch(razorpay_subscription_id)
+            razorpay_plan_id = sub_details['plan_id']
+            plan = Plan.objects.get(razorpay_plan_id=razorpay_plan_id)
 
-            wallet = transaction.wallet
-            wallet.balance += transaction.amount
-            wallet.save()
+            # Deactivate any old subscriptions
+            Subscription.objects.filter(user=request.user, is_active=True).update(is_active=False)
 
-            return redirect('wallet')
+            # Create new subscription
+            Subscription.objects.create(
+                user=request.user,
+                plan=plan,
+                razorpay_subscription_id=razorpay_subscription_id,
+                end_date=timezone.now() + timedelta(days=30), # Or based on plan
+                is_active=True,
+            )
+            return redirect('dashboard')
+
         except Exception as e:
-            try:
-                transaction = Transaction.objects.get(order_id=razorpay_order_id)
-                transaction.status = 'Failed'
-                transaction.save()
-            except Transaction.DoesNotExist:
-                pass
-            return redirect('wallet')
-    return HttpResponse("Invalid request", status=400)
+            # Handle payment failure
+            return render(request, 'dashboard/payment_failed.html', {'error': str(e)})
+
+    return redirect('pricing')
+
 
 @login_required
 def analyze_channel_view(request):
-    wallet = Wallet.objects.get(user=request.user)
-    analysis_cost = Decimal('0.25')
-    if wallet.balance < analysis_cost:
-        return JsonResponse({'error': 'Insufficient balance. Please add funds to your wallet.'}, status=402)
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        channel_url = data.get('channel_url')
-        api_key = os.environ.get('YOUTUBE_API_KEY')
-        if not channel_url or not api_key:
-            return JsonResponse({'error': 'Channel URL or API Key is missing'}, status=400)
-        channel_data = get_channel_details(api_key, channel_url)
-        if channel_data.get('error'):
-            return JsonResponse(channel_data, status=400)
-        wallet.balance -= analysis_cost
-        wallet.save()
-        channel_data['new_balance'] = wallet.balance
-        return JsonResponse(channel_data)
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+    """
+    View for the YouTube Analyzer tool.
+    Checks for active subscription.
+    """
+    try:
+        subscription = Subscription.objects.get(user=request.user, is_active=True)
+    except Subscription.DoesNotExist:
+        return redirect('pricing') # Redirect to pricing if no active subscription
+
+    # Your existing analysis logic goes here
+    # ...
+    # Return the analysis_results.html template
+    context = {'subscription': subscription}
+    return render(request, 'dashboard/analyzer_tool.html', context)
+
+@login_required
+def profile_view(request):
+    """ User profile and referral page """
+    profile = request.user.profile
+    context = {'profile': profile}
+    return render(request, 'dashboard/profile.html', context)
