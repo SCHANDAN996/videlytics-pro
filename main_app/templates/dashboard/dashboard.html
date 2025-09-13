@@ -1,0 +1,28 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block dashboard_content %}
+{% if subscription %}
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+      <p class="font-bold">You are subscribed to the {{ subscription.plan.name }} plan.</p>
+      <p>Your subscription is active until {{ subscription.end_date|date:"F d, Y" }}.</p>
+    </div>
+{% else %}
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+      <p class="font-bold">No Active Subscription</p>
+      <p>You are currently on the free plan. <a href="{% url 'pricing' %}" class="underline font-semibold">Upgrade now</a> to unlock all features.</p>
+    </div>
+{% endif %}
+
+<!-- Add dashboard widgets here -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="font-bold text-lg">YouTube Channel Analyzer</h3>
+        <p class="text-gray-600 mt-2">Get in-depth analytics for any YouTube channel.</p>
+        <a href="{% url 'analyze_channel' %}" class="text-indigo-600 hover:underline mt-4 inline-block">Use Tool &rarr;</a>
+    </div>
+    <!-- Placeholder for more tools -->
+</div>
+{% endblock %}
+
