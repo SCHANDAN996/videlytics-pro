@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up - Videlytics.pro{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10 bg-white p-8 rounded-lg shadow-lg">
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Create a New Account</h2>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        
+        <!-- Django's form fields are rendered manually for better styling -->
+        <div>
+            <label for="id_username" class="block text-sm font-medium text-gray-700">Username</label>
+            <input type="text" name="username" id="id_username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
+            {% if form.username.help_text %}
+            <p class="text-xs text-gray-500 mt-1">{{ form.username.help_text|safe }}</p>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_password1" class="block text-sm font-medium text-gray-700">Password</label>
+            <input type="password" name="password1" id="id_password1" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
+             {% if form.password1.help_text %}
+            <ul class="text-xs text-gray-500 mt-1 list-disc list-inside">
+                {% for help in form.password1.help_text|stringformat:"s"|split:'.' %}
+                    {% if help|length > 1 %}<li>{{ help }}.</li>{% endif %}
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_password2" class="block text-sm font-medium text-gray-700">Password confirmation</label>
+            <input type="password" name="password2" id="id_password2" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" required>
+        </div>
+
+        {% if form.errors %}
+            {% for field in form %}
+                {% for error in field.errors %}
+                <div class="p-3 bg-red-100 text-red-700 rounded-md mt-2">
+                    <p>{{ error|striptags }}</p>
+                </div>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <div class="p-3 bg-red-100 text-red-700 rounded-md mt-2">
+                    <p>{{ error|striptags }}</p>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:bg-blue-700">Sign Up</button>
+        </div>
+    </form>
+    <p class="mt-6 text-center text-sm text-gray-600">
+        Already have an account? <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-500">Log In</a>
+    </p>
+</div>
+{% endblock %}
+
+

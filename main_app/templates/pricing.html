@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Pricing - Videlytics.pro{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto text-center">
+    <h1 class="text-4xl font-bold text-gray-900">Our Pricing Plans</h1>
+    <p class="mt-4 text-lg text-gray-600">Choose the plan that's right for you.</p>
+</div>
+
+<div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+    {% for plan in plans %}
+    <div class="bg-white p-8 rounded-lg shadow-lg border-t-4 {% if plan.name == 'Pro' %}border-blue-500{% else %}border-gray-200{% endif %}">
+        <h2 class="text-2xl font-bold text-gray-800">{{ plan.name }}</h2>
+        <p class="mt-4 text-4xl font-bold text-gray-900">₹{{ plan.price|floatformat:0 }}<span class="text-lg font-medium text-gray-500">/mo</span></p>
+        <p class="mt-2 text-gray-600">{{ plan.analysis_quota }} analyses per month</p>
+        <ul class="mt-6 space-y-4 text-gray-600">
+            <li class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Channel Analytics
+            </li>
+            <li class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Keyword Research
+            </li>
+            <li class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Tag Generator
+            </li>
+        </ul>
+        <button class="mt-8 w-full {% if plan.name == 'Pro' %}bg-blue-600 text-white hover:bg-blue-700{% else %}bg-gray-200 text-gray-800 hover:bg-gray-300{% endif %} font-bold py-2 px-4 rounded-md">
+            Choose Plan
+        </button>
+        <p class="text-xs text-gray-500 mt-2 text-center">(Payment system coming soon)</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+
