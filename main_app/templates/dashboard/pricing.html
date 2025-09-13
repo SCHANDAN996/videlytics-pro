@@ -1,0 +1,27 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block page_title %}Pricing Plans{% endblock %}
+
+{% block dashboard_content %}
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    {% for plan in plans %}
+    <div class="bg-white p-8 rounded-lg shadow-lg text-center flex flex-col">
+        <h3 class="text-2xl font-bold mb-4">{{ plan.name }}</h3>
+        <p class="text-4xl font-extrabold mb-4">${{ plan.price|floatformat:0 }}<span class="text-lg font-medium text-gray-500">/mo</span></p>
+        <ul class="text-left mb-8 flex-grow">
+            {% for feature in plan.get_features_list %}
+            <li class="flex items-center mb-2">
+                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                {{ feature }}
+            </li>
+            {% endfor %}
+        </ul>
+        <form action="{% url 'create_subscription' plan.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg">Choose Plan</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
