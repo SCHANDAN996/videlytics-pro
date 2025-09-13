@@ -1,1 +1,19 @@
-Environment variables.env*.envPythonpycache/venv/*.pyc*.pyo*.pydDjangodb.sqlite3staticfiles/media/IDE files.idea/.vscode/
+Environment variables
+.env
+*.env
+
+Python
+pycache/
+venv/
+*.pyc
+*.pyo
+*.pyd
+
+Django
+db.sqlite3
+staticfiles/
+media/
+
+IDE files
+.idea/
+.vscode/
