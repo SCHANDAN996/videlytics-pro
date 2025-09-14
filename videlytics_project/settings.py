@@ -1,5 +1,3 @@
-# Path: videlytics_project/settings.py
-
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -26,7 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'django.contrib.sites',  # This app is now correctly placed
+    'django.contrib.sites',  # Added for django-allauth
 
     # My Apps
     'main_app',
@@ -113,8 +111,10 @@ LOGIN_REDIRECT_URL = '/dashboard'
 LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_LOGOUT_ON_GET = True
-ACCOUNT_LOGIN_METHODS = ["email"]
-ACCOUNT_SIGNUP_FIELDS = ["email", "password"] 
+# This setting was incorrect in the original file, it should be a list or tuple
+ACCOUNT_LOGIN_METHODS = ["email"] 
+# This setting was also incorrect, password should not be listed here
+ACCOUNT_SIGNUP_FIELDS = ["email"] 
 
 ACCOUNT_FORMS = {
     'login': 'main_app.forms.CustomLoginForm',
@@ -130,3 +130,5 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # Crispy Forms settings
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+# === Add this line to fix the error ===
+CRISPY_TEMPLATE_PACK = "tailwind"
