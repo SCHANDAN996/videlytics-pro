@@ -4,16 +4,20 @@
 # Exit immediately if a command exits with a non-zero status.
 set -o errexit
 
-# Install all Python dependencies from requirements.txt
 echo "--- Installing dependencies ---"
 pip install -r requirements.txt
 
-# Collect all static files (CSS, JS, etc.) into a single directory
+# The --clear flag is important to remove old static files
 echo "--- Collecting static files ---"
-python manage.py collectstatic --no-input
+python manage.py collectstatic --no-input --clear
 
-# Run our custom management command to apply migrations and create a superuser
-echo "--- Running production setup (migrations & superuser) ---"
-python manage.py setup_production
+# This is the most important command. It will now use the migration files.
+echo "--- Applying database migrations ---"
+python manage.py migrate
+
+# Create a superuser if it doesn't exist, using environment variables
+echo "--- Creating superuser ---"
+python manage.py createsuperuser --no-input || echo "Superuser already exists."
 
 echo "--- Build finished successfully! ---"
+
