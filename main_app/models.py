@@ -16,8 +16,7 @@ class UserProfile(models.Model):
     referral_code = models.CharField(max_length=12, blank=True, unique=True)
     referral_credits = models.IntegerField(default=0)
     
-    # === यह नया फ़ील्ड जोड़ा गया है ताकि एरर ठीक हो सके ===
-    # यह उस यूज़र को ट्रैक करेगा जिसने इस यूज़र को रेफर किया है।
+    # यह नया फ़ील्ड जोड़ा गया है
     referred_by = models.ForeignKey(
         User, 
         on_delete=models.SET_NULL, 
@@ -25,7 +24,6 @@ class UserProfile(models.Model):
         blank=True, 
         related_name='referrals'
     )
-    # =======================================================
 
     def __str__(self):
         return self.user.username
