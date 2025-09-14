@@ -1,3 +1,5 @@
+# Path: videlytics_project/settings.py
+
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -101,7 +103,7 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Allauth settings (Updated for new versions)
+# Allauth settings
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -112,9 +114,7 @@ LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGIN_METHODS = ["email"]
-# --- यह लाइन ठीक कर दी गई है ---
-ACCOUNT_SIGNUP_FIELDS = ["email", "password_first"] 
-# -----------------------------
+ACCOUNT_SIGNUP_FIELDS = ["email", "password"] 
 
 ACCOUNT_FORMS = {
     'login': 'main_app.forms.CustomLoginForm',
