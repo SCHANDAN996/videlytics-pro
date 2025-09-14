@@ -24,7 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
+    'django.contrib.sites',  # This app is now correctly placed
 
     # My Apps
     'main_app',
