@@ -6,10 +6,14 @@ from .models import UserProfile
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     """
-    Create or update the user profile.
-    If a user is created, a new UserProfile is created.
+    Creates a UserProfile when a new User is created,
+    or just saves the profile if the User is updated.
     """
     if created:
         UserProfile.objects.create(user=instance)
-    # Ensure the profile is saved whenever the user is saved.
-    instance.profile.save()
+    else:
+        # Ensure the profile exists before trying to save it,
+        # otherwise create it. This handles edge cases.
+        UserProfile.objects.get_or_create(user=instance)
+        instance.profile.save()
+
