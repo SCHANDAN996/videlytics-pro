@@ -16,6 +16,7 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 ALLOWED_HOSTS.extend(['videlytics.pro', 'www.videlytics.pro'])
 
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -24,7 +25,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
+    'django.contrib.sites',  # <-- यह लाइन बहुत ज़रूरी है, इसे जोड़ा गया है
+
+    # My Apps
     'main_app',
+    
+    # 3rd Party Apps
     'crispy_forms',
     'crispy_tailwind',
     'allauth',
@@ -32,6 +38,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
 ]
+
+# यह सुनिश्चित करता है कि Django को पता है कि किस साइट के लिए काम करना है
+SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,7 +59,7 @@ ROOT_URLCONF = 'videlytics_project.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'main_app/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'main_app', 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -65,54 +74,55 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'videlytics_project.wsgi.application'
 
-DATABASES = {
-    'default': dj_database_url.config(
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=True,
-    ) if 'DATABASE_URL' in os.environ else {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Database
+if 'DATABASE_URL' in os.environ:
+    DATABASES = { 'default': dj_database_url.config(conn_max_age=600, ssl_require=True) }
+else:
+    DATABASES = { 'default': { 'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3' } }
 
+
+# Password validation
 AUTH_PASSWORD_VALIDATORS = [
-    { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator' },
-    { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator' },
-    { 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator' },
-    { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator' },
+    { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
+    { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
 
+
+# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
-USE_I1N = True
+USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STORAGES = {
-    "staticfiles": { "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage" },
+    "staticfiles": { "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage", },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Allauth settings
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-SITE_ID = 1
 LOGIN_REDIRECT_URL = '/dashboard'
 LOGOUT_REDIRECT_URL = '/'
-ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "optional"
-ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_FORMS = {
     'login': 'main_app.forms.CustomLoginForm',
     'signup': 'main_app.forms.CustomSignupForm',
 }
+ACCOUNT_LOGOUT_ON_GET = True
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -121,6 +131,6 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
+# Crispy Forms settings
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
-# हमने नीचे वाली लाइन हटा दी है क्योंकि यह एडमिन पैनल को खराब कर रही थी
-# CRISPY_TEMPLATE_PACK = "tailwind"
+
