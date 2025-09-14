@@ -1,28 +1,19 @@
 #!/usr/bin/env bash
-# Exit on error, ensuring that the script will stop if any command fails.
+# This script runs the necessary commands to build the Django application on Render.
+
+# Exit immediately if a command exits with a non-zero status.
 set -o errexit
 
-echo "Starting build process..."
-
-# Step 1: Install all dependencies from requirements.txt
-echo "Installing dependencies..."
+# Install all Python dependencies from requirements.txt
+echo "--- Installing dependencies ---"
 pip install -r requirements.txt
 
-# Step 2: Collect all static files (CSS, JS, images)
-# The --no-input flag prevents the command from asking for confirmation.
-echo "Collecting static files..."
+# Collect all static files (CSS, JS, etc.) into a single directory
+echo "--- Collecting static files ---"
 python manage.py collectstatic --no-input
 
-# Step 3: Apply database migrations
-# This is the most crucial step. It creates all the necessary tables in the database.
-echo "Applying database migrations..."
-python manage.py migrate
+# Run our custom management command to apply migrations and create a superuser
+echo "--- Running production setup (migrations & superuser) ---"
+python manage.py setup_production
 
-# Step 4: Create a superuser (admin) only if it doesn't already exist.
-# This part is now handled by a separate Django management command for reliability.
-# We will create this command in the next step.
-# For now, we will use the same logic as before.
-echo "Creating superuser..."
-python manage.py createsuperuser --no-input || echo "Superuser already exists."
-
-echo "Build process finished successfully!"
+echo "--- Build finished successfully! ---"
