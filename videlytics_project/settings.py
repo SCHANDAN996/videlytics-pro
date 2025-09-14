@@ -112,8 +112,9 @@ LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGIN_METHODS = ["email"]
-ACCOUNT_SIGNUP_FIELDS = ["email", "password"]
-
+# --- यह लाइन ठीक कर दी गई है ---
+ACCOUNT_SIGNUP_FIELDS = ["email", "password_first"] 
+# -----------------------------
 
 ACCOUNT_FORMS = {
     'login': 'main_app.forms.CustomLoginForm',
