@@ -16,7 +16,6 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 ALLOWED_HOSTS.extend(['videlytics.pro', 'www.videlytics.pro'])
 
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -25,7 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
-    'django.contrib.sites',  # <-- यह लाइन बहुत ज़रूरी है, इसे जोड़ा गया है
+    'django.contrib.sites',
 
     # My Apps
     'main_app',
@@ -39,7 +38,6 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 ]
 
-# यह सुनिश्चित करता है कि Django को पता है कि किस साइट के लिए काम करना है
 SITE_ID = 1
 
 MIDDLEWARE = [
@@ -80,7 +78,6 @@ if 'DATABASE_URL' in os.environ:
 else:
     DATABASES = { 'default': { 'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3' } }
 
-
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
@@ -89,13 +86,11 @@ AUTH_PASSWORD_VALIDATORS = [
     { 'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
 
-
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -106,7 +101,7 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Allauth settings
+# Allauth settings (Updated for new versions)
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -115,14 +110,15 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_REDIRECT_URL = '/dashboard'
 LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_EMAIL_VERIFICATION = "optional"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_AUTHENTICATION_METHOD = "email"
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_LOGIN_METHODS = ["email"]
+ACCOUNT_SIGNUP_FIELDS = ["email", "password"]
+
+
 ACCOUNT_FORMS = {
     'login': 'main_app.forms.CustomLoginForm',
     'signup': 'main_app.forms.CustomSignupForm',
 }
-ACCOUNT_LOGOUT_ON_GET = True
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
@@ -133,4 +129,3 @@ SOCIALACCOUNT_PROVIDERS = {
 
 # Crispy Forms settings
 CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
-
