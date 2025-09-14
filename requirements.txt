@@ -13,3 +13,4 @@ requests-oauthlib
 PyJWT
 pandas
 openpyxl
+cryptography
