@@ -14,3 +14,4 @@ PyJWT
 pandas
 openpyxl
 cryptography
+setuptools
